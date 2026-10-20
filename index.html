@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organizador Escolar - Licier</title>
+  
+  <!-- Fonte moderna do Google Fonts (Plus Jakarta Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       VARIÁVEIS CSS (MODO CLARO E MODO ESCURO)
+       ============================================================ */
+    :root {
+      --tamanho-base: 16px;
+
+      /* MODO CLARO */
+      --bg-body: #f1f5f9;
+      --bg-radial-1: rgba(99, 102, 241, 0.08);
+      --bg-radial-2: rgba(59, 130, 246, 0.08);
+      --bg-radial-3: rgba(147, 197, 253, 0.08);
+
+      --bg-card: #ffffff;
+      --bg-card-subtle: #f8fafc;
+      --bg-card-subtle-hover: #f1f5f9;
+      
+      --text-main: #0f172a;
+      --text-muted: #334155;
+      --text-subtle: #64748b;
+      
+      --border-color: #cbd5e1;
+      --border-color-strong: #94a3b8;
+      
+      --accent-blue-bg: #eff6ff;
+      --accent-blue-border: #93c5fd;
+      --accent-blue-text: #1e3a8a;
+
+      --btn-bg: #ffffff;
+      --btn-text: #0f172a;
+      --btn-border: #94a3b8;
+      --btn-hover-bg: #e2e8f0;
+
+      --input-bg: #f8fafc;
+      --input-border: #94a3b8;
+
+      --shadow-card: 0 10px 25px rgba(15, 23, 42, 0.06);
+      --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.04);
+      --modal-overlay: rgba(15, 23, 42, 0.65);
+    }
+
+    /* MODO ESCURO */
+    [data-theme="dark"] {
+      --bg-body: #0b0f19;
+      --bg-radial-1: rgba(99, 102, 241, 0.15);
+      --bg-radial-2: rgba(59, 130, 246, 0.15);
+      --bg-radial-3: rgba(14, 165, 233, 0.12);
+
+      --bg-card: #131b2e;
+      --bg-card-subtle: #19243c;
+      --bg-card-subtle-hover: #22304e;
+
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --text-subtle: #94a3b8;
+
+      --border-color: #283756;
+      --border-color-strong: #3b4e76;
+
+      --accent-blue-bg: #1e293b;
+      --accent-blue-border: #3b82f6;
+      --accent-blue-text: #93c5fd;
+
+      --btn-bg: #19243c;
+      --btn-text: #f8fafc;
+      --btn-border: #3b4e76;
+      --btn-hover-bg: #263657;
+
+      --input-bg: #19243c;
+      --input-border: #3b4e76;
+
+      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
+      --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.3);
+      --modal-overlay: rgba(0, 0, 0, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: var(--tamanho-base);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background-color: var(--bg-body);
+      background-image: 
+        radial-gradient(at 0% 0%, var(--bg-radial-1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, var(--bg-radial-2) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, var(--bg-radial-3) 0px, transparent 50%);
+      color: var(--text-main);
+      padding: 24px 16px 60px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    /* Transição suave entre temas */
+    body, 
+    .header-card, 
+    .accessibility-bar, 
+    .today-section, 
+    .tasks-section, 
+    .week-section, 
+    .week-card, 
+    .task-item, 
+    .btn-acc, 
+    .task-input,
+    .badge-app,
+    .date-pill,
+    .today-card-empty,
+    .modal-box {
+      transition: background-color 0.35s ease, 
+                  border-color 0.35s ease, 
+                  color 0.35s ease, 
+                  box-shadow 0.35s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1140px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* LAYOUT RESPONSIVO: LADO A LADO NO COMPUTADOR */
+    .dashboard-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      width: 100%;
+      align-items: start;
+    }
+
+    @media (min-width: 880px) {
+      .dashboard-row {
+        grid-template-columns: 1.05fr 0.95fr;
+      }
+    }
+
+    /* BARRA DE ACESSIBILIDADE E CONTROLES RÁPIDOS */
+    .accessibility-bar {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 22px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      box-shadow: var(--shadow-subtle);
+      width: 100%;
+    }
+
+    .font-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .actions-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* BOTÕES GRANDES */
+    .btn-acc {
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 800;
+      min-height: 50px;
+      padding: 10px 18px;
+      border-radius: 16px;
+      border: 2px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .btn-acc:hover {
+      background: var(--btn-hover-bg);
+      border-color: var(--border-color-strong);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-acc:active {
+      transform: translateY(0);
+    }
+
+    /* Botão de Configurações */
+    .btn-config {
+      background: #4338ca;
+      color: #ffffff;
+      border-color: #3730a3;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.25);
+    }
+
+    .btn-config:hover {
+      background: #4f46e5;
+      color: #ffffff;
+      border-color: #4338ca;
+    }
+
+    .btn-theme {
+      border-color: #6366f1;
+      color: var(--text-main);
+    }
+
+    .btn-notif {
+      border-color: #0284c7;
+      color: #0284c7;
+    }
+
+    [data-theme="dark"] .btn-notif {
+      color: #38bdf8;
+      border-color: #0284c7;
+    }
+
+    .btn-notif.active {
+      background: rgba(2, 132, 199, 0.15);
+      border-color: #0284c7;
+    }
+
+    .btn-speech {
+      background: #1e40af;
+      color: #ffffff;
+      border-color: #1e3a8a;
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+    }
+
+    .btn-speech:hover {
+      background: #1d4ed8;
+      border-color: #1e40af;
+      color: #ffffff;
+    }
+
+    .btn-speech.is-speaking {
+      background: #dc2626;
+      border-color: #991b1b;
+      animation: pulsoVoz 1.2s infinite;
+    }
+
+    @keyframes pulsoVoz {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    /* CABEÇALHO */
+    .header-card {
+      background: var(--bg-card);
+      border-radius: 26px;
+      padding: clamp(24px, 5vw, 36px) clamp(16px, 4vw, 28px);
+      text-align: center;
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .header-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 7px;
+      background: linear-gradient(90deg, #1d4ed8, #4f46e5, #7c3aed);
+    }
+
+    .badge-app {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .greeting-title {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+      line-height: 1.15;
+      margin-bottom: 16px;
+      word-break: break-word;
+    }
+
+    .greeting-name {
+      color: #3b82f6;
+      text-decoration: underline;
+      text-decoration-color: #60a5fa;
+      text-decoration-thickness: 4px;
+      text-underline-offset: 6px;
+    }
+
+    .date-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--accent-blue-bg);
+      color: var(--accent-blue-text);
+      border: 2px solid var(--accent-blue-border);
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    /* SEÇÃO DE AULAS DE HOJE */
+    .today-section {
+      background: var(--bg-card);
+      border-radius: 26px;
+      padding: clamp(20px, 4vw, 30px);
+      border: 2px solid var(--border-color-strong);
+      box-shadow: var(--shadow-card);
+      width: 100%;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: clamp(1.25rem, 3vw, 1.45rem);
+      font-weight: 900;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tag-today {
+      background: #1d4ed8;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .today-card-active {
+      background: #1e3a8a;
+      color: #ffffff;
+      border-radius: 22px;
+      padding: clamp(20px, 4vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 10px 25px rgba(30, 58, 138, 0.3);
+      border: 2px solid #3b82f6;
+      width: 100%;
+    }
+
+    .today-card-active.almost-starting {
+      background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+      border: 3px solid #fbbf24;
+      animation: pulsoAtencao 2s infinite;
+    }
+
+    @keyframes pulsoAtencao {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .today-card-active.happening-now {
+      background: #064e3b;
+      border: 3px solid #10b981;
+      box-shadow: 0 12px 30px rgba(6, 78, 59, 0.4);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      color: #991b1b;
+      font-size: 0.85rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 2px solid #f87171;
+      white-space: nowrap;
+    }
+
+    .live-badge.warning {
+      color: #92400e;
+      border-color: #fcd34d;
+    }
+
+    .pulsing-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #dc2626;
+      border-radius: 50%;
+      animation: pulsar 1.4s infinite;
+    }
+
+    .pulsing-dot.warning {
+      background-color: #d97706;
+    }
+
+    @keyframes pulsar {
+      0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8);
+      }
+      70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+      }
+      100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+      }
+    }
+
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      width: fit-content;
+      white-space: nowrap;
+    }
+
+    .subject-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.3rem);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .subject-subtitle {
+      font-size: clamp(1rem, 2vw, 1.1rem);
+      color: #f8fafc;
+      font-weight: 600;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .progress-wrapper {
+      margin-top: 8px;
+      background: #022c22;
+      padding: 16px;
+      border-radius: 18px;
+      border: 2px solid #059669;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: #ffffff;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 16px;
+      background: #064e3b;
+      border: 2px solid #34d399;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #34d399;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.9);
+    }
+
+    .progress-subtext {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #a7f3d0;
+      text-align: right;
+    }
+
+    .today-card-empty {
+      background: var(--bg-card-subtle);
+      border: 3px dashed var(--border-color);
+      border-radius: 22px;
+      padding: clamp(24px, 4vw, 36px) 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .empty-icon {
+      font-size: 2.8rem;
+    }
+
+    .empty-title {
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: 900;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .empty-desc {
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+      color: var(--text-muted);
+      max-width: 480px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* SEÇÃO DE TAREFAS */
+    .tasks-section {
+      background: var(--bg-card);
+      border-radius: 26px;
+      padding: clamp(20px, 4vw, 30px);
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+      width: 100%;
+    }
+
+    .tasks-counter {
+      background: var(--bg-card-subtle);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .task-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .task-input {
+      flex: 1;
+      min-width: 180px;
+      min-height: 50px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 12px 18px;
+      border-radius: 16px;
+      border: 2px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .task-input:focus {
+      border-color: #3b82f6;
+      background: var(--bg-card);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .task-input::placeholder {
+      color: var(--text-subtle);
+    }
+
+    .btn-add {
+      font-family: inherit;
+      background: #1d4ed8;
+      color: #ffffff;
+      border: 2px solid #1e3a8a;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 16px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+      white-space: nowrap;
+    }
+
+    .btn-add:hover {
+      background: #1e40af;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
+    }
+
+    .tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-card-subtle);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .task-item:hover {
+      background: var(--bg-card-subtle-hover);
+      border-color: var(--border-color-strong);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .task-item.is-done {
+      background: rgba(22, 163, 74, 0.12);
+      border-color: #16a34a;
+      animation: suavePulso 0.45s ease;
+    }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      cursor: pointer;
+      user-select: none;
+      min-width: 0;
+    }
+
+    .custom-check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 3px solid var(--border-color-strong);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      color: transparent;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .task-item.is-done .custom-check {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #ffffff;
+      transform: scale(1.1);
+    }
+
+    .task-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.35;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .task-item.is-done .task-text {
+      text-decoration: line-through;
+      color: var(--text-subtle);
+      opacity: 0.75;
+    }
+
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.15);
+      border: 2px solid rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      cursor: pointer;
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-delete:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #dc2626;
+      transform: scale(1.1);
+    }
+
+    .empty-tasks {
+      text-align: center;
+      padding: 26px 12px;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* SEÇÃO DO QUADRO DA SEMANA */
+    .week-section {
+      background: var(--bg-card);
+      border-radius: 26px;
+      padding: clamp(20px, 4vw, 30px);
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+      width: 100%;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .week-card {
+      background: var(--bg-card-subtle);
+      border: 2px solid var(--border-color);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      min-width: 0;
+    }
+
+    .week-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      border-color: var(--border-color-strong);
+    }
+
+    .week-card.is-today {
+      background: var(--accent-blue-bg);
+      border: 3px solid #3b82f6;
+      box-shadow: 0 8px 20px rgba(29, 78, 216, 0.15);
+    }
+
+    .week-card.happening-now {
+      background: rgba(16, 185, 129, 0.15);
+      border: 3px solid #10b981;
+      box-shadow: 0 8px 22px rgba(5, 150, 105, 0.25);
+    }
+
+    .week-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .week-card-day {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .pill-is-today {
+      background: #1d4ed8;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pill-now-green {
+      background: #059669;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .week-card-time {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text-main);
+      background: var(--bg-card);
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      width: fit-content;
+      white-space: nowrap;
+    }
+
+    .week-card-subject {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #3b82f6;
+      line-height: 1.3;
+      margin-top: 2px;
+      word-break: break-word;
+    }
+
+    .week-card.happening-now .week-card-subject {
+      color: #10b981;
+    }
+
+    .week-card.no-class .week-card-subject {
+      color: var(--text-subtle);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    /* RODAPÉ */
+    .footer-note {
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 10px;
+    }
+
+    .sync-status {
+      font-size: 0.95rem;
+      color: #10b981;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ============================================================
+       TELA MODAL DE CONFIGURAÇÃO DE HORÁRIOS
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color-strong);
+      border-radius: 26px;
+      width: 100%;
+      max-width: 780px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: clamp(24px, 4vw, 36px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-close-modal {
+      background: var(--bg-card-subtle);
+      border: 2px solid var(--border-color);
+      color: var(--text-main);
+      font-size: 1.4rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      transition: all 0.2s ease;
+    }
+
+    .btn-close-modal:hover {
+      background: #fee2e2;
+      color: #ef4444;
+      border-color: #fca5a5;
+    }
+
+    /* Ações de Backup / JSON */
+    .backup-bar {
+      background: var(--bg-card-subtle);
+      border: 2px dashed var(--border-color);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .backup-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .backup-buttons {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-backup {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-backup:hover {
+      background: var(--btn-hover-bg);
+      transform: translateY(-1px);
+    }
+
+    /* Formulário de Edição de Aula */
+    .config-form-card {
+      background: var(--bg-card-subtle);
+      border: 2px solid var(--border-color);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .form-group select,
+    .form-group input {
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 2px solid var(--input-border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .form-group select:focus,
+    .form-group input:focus {
+      border-color: #3b82f6;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 4px;
+    }
+
+    .checkbox-container input {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-save-class {
+      background: #16a34a;
+      color: #ffffff;
+      border: 2px solid #15803d;
+      font-weight: 800;
+      padding: 10px 22px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-save-class:hover {
+      background: #15803d;
+    }
+
+    /* Lista de Aulas Configuradas */
+    .config-days-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .config-day-item {
+      background: var(--bg-card-subtle);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .config-day-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .config-day-name {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .config-day-details {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .config-day-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action-small {
+      font-family: inherit;
+      font-weight: 800;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-small:hover {
+      background: var(--btn-hover-bg);
+      border-color: var(--border-color-strong);
+    }
+
+    .btn-action-small.danger:hover {
+      background: #fee2e2;
+      color: #ef4444;
+      border-color: #fca5a5;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px 12px 50px 12px;
+      }
+      .accessibility-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .font-controls, .actions-controls {
+        justify-content: center;
+        width: 100%;
+      }
+      .btn-acc {
+        flex: 1;
+        min-width: 130px;
+      }
+      .btn-add {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- BARRA DE ACESSIBILIDADE E CONTROLES RÁPIDOS -->
+    <aside class="accessibility-bar" aria-label="Controles de acessibilidade">
+      <div class="font-controls">
+        <span class="control-label">Texto:</span>
+        <button id="btn-font-minus" class="btn-acc" title="Diminuir o tamanho das letras">
+          <span>A−</span>
+          <span style="font-size: 0.85rem; font-weight: 600;">Menor</span>
+        </button>
+        <button id="btn-font-plus" class="btn-acc" title="Aumentar o tamanho das letras">
+          <span>A+</span>
+          <span style="font-size: 0.85rem; font-weight: 600;">Maior</span>
+        </button>
+      </div>
+
+      <div class="actions-controls">
+        <!-- Botão para Abrir a Tela de Configuração de Aulas -->
+        <button id="btn-abrir-config" class="btn-acc btn-config" title="Cadastrar, mudar ou apagar aulas">
+          <span>⚙️</span>
+          <span>Configurar Aulas</span>
+        </button>
+
+        <!-- Botão de Tema -->
+        <button id="btn-tema" class="btn-acc btn-theme" title="Alternar entre modo claro e modo escuro">
+          <span id="theme-icon">🌙</span>
+          <span id="theme-text">Modo Escuro</span>
+        </button>
+
+        <!-- Botão de Notificação -->
+        <button id="btn-notificacao" class="btn-acc btn-notif" title="Receber aviso no computador 5 minutos antes da aula">
+          <span id="notif-icon">🔔</span>
+          <span id="notif-text">Avisos (5 min)</span>
+        </button>
+
+        <!-- Botão de Voz -->
+        <button id="btn-ouvir" class="btn-acc btn-speech" title="Ouvir em voz alta o que você tem hoje">
+          <span id="speech-icon">🔊</span>
+          <span id="speech-text">Ouvir Aulas</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Cabeçalho -->
+    <header class="header-card">
+      <div class="badge-app">🎒 Organizador Escolar</div>
+      <h1 class="greeting-title" id="saudacao-topo">
+        Olá, <span class="greeting-name">Licier</span>! 👋
+      </h1>
+      <div class="date-pill">
+        <span>📅</span>
+        <span id="data-atual">Carregando data...</span>
+      </div>
+    </header>
+
+    <!-- LINHA PRINCIPAL: LADO A LADO NO COMPUTADOR -->
+    <div class="dashboard-row">
+      
+      <!-- COLUNA 1: Aulas de Hoje -->
+      <section class="today-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>⭐ Aulas de Hoje</span>
+          </h2>
+          <span class="tag-today" id="badge-dia-hoje">Hoje</span>
+        </div>
+
+        <div id="container-hoje">
+          <!-- Preenchido via JavaScript -->
+        </div>
+      </section>
+
+      <!-- COLUNA 2: Minhas Tarefas -->
+      <section class="tasks-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>📝 Minhas Tarefas</span>
+          </h2>
+          <span class="tasks-counter" id="contador-tarefas">0 tarefas</span>
+        </div>
+
+        <form class="task-form" id="form-tarefas">
+          <input 
+            type="text" 
+            id="input-tarefa" 
+            class="task-input" 
+            placeholder="O que você precisa fazer hoje?"
+            autocomplete="off"
+          >
+          <button type="submit" class="btn-add">
+            <span>➕</span>
+            <span>Adicionar</span>
+          </button>
+        </form>
+
+        <ul class="tasks-list" id="lista-tarefas">
+          <!-- Itens inseridos dinamicamente -->
+        </ul>
+      </section>
+
+    </div>
+
+    <!-- Quadro da Semana -->
+    <section class="week-section">
+      <h2 class="section-title">
+        <span>📅 Horário da Semana</span>
+      </h2>
+      <div class="week-grid" id="grid-semana">
+        <!-- Grade inserida dinamicamente -->
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      <span class="sync-status">● Relógio ativo: a página atualiza sozinha a cada minuto</span>
+      <span>Tudo pronto para os seus estudos! ✨</span>
+    </footer>
+  </div>
+
+  <!-- ============================================================
+       MODAL DE CONFIGURAÇÃO DE AULAS (SEM MEXER NO CÓDIGO)
+       ============================================================ -->
+  <div class="modal-overlay" id="modal-config">
+    <div class="modal-box">
+      
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>⚙️</span>
+          <span>Configurar Horário das Aulas</span>
+        </div>
+        <button class="btn-close-modal" id="btn-fechar-config" title="Fechar configuração">✕</button>
+      </div>
+
+      <!-- Barra de Backup JSON -->
+      <div class="backup-bar">
+        <div class="backup-text">
+          <span>💾 <strong>Salvar ou Carregar Horário:</strong></span>
+          <div style="font-size: 0.85rem; color: var(--text-subtle); margin-top: 2px;">
+            Guarde um arquivo no seu computador para backup ou restaure quando quiser.
+          </div>
+        </div>
+        <div class="backup-buttons">
+          <button class="btn-backup" id="btn-exportar-json" title="Salvar todo o seu horário num arquivo .json">
+            <span>📥 Baixar Horário (JSON)</span>
+          </button>
+          
+          <label class="btn-backup" style="cursor: pointer;" title="Carregar um arquivo .json salvo anteriormente">
+            <span>📤 Carregar Horário (JSON)</span>
+            <input type="file" id="input-importar-json" accept=".json" style="display: none;">
+          </label>
+        </div>
+      </div>
+
+      <!-- Formulário de Edição -->
+      <form class="config-form-card" id="form-config-aula">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);" id="form-titulo">
+          ✏️ Cadastrar ou Mudar Aula
+        </h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="campo-dia">Dia da Semana:</label>
+            <select id="campo-dia">
+              <option value="1">Segunda-feira</option>
+              <option value="2">Terça-feira</option>
+              <option value="3">Quarta-feira</option>
+              <option value="4">Quinta-feira</option>
+              <option value="5">Sexta-feira</option>
+              <option value="6">Sábado</option>
+              <option value="0">Domingo</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="campo-icone">Ícone / Emoji:</label>
+            <input type="text" id="campo-icone" value="💻" maxlength="4" style="text-align: center; font-size: 1.3rem;">
+          </div>
+        </div>
+
+        <label class="checkbox-container">
+          <input type="checkbox" id="campo-tem-aula" checked>
+          <span>Tem aula neste dia</span>
+        </label>
+
+        <div id="campos-detalhes-aula" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label for="campo-materia">Nome da Matéria:</label>
+            <input type="text" id="campo-materia" placeholder="Ex: Programação Web II" autocomplete="off">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="campo-hora-inicio">Horário de Início:</label>
+              <input type="time" id="campo-hora-inicio" value="19:00">
+            </div>
+
+            <div class="form-group">
+              <label for="campo-hora-fim">Horário de Término:</label>
+              <input type="time" id="campo-hora-fim" value="22:30">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-buttons">
+          <button type="button" class="btn-backup" id="btn-cancelar-edicao" style="display: none;">Cancelar</button>
+          <button type="submit" class="btn-save-class">
+            <span>💾</span>
+            <span>Salvar Aula</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Lista dos Dias da Semana -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">
+          📋 Aulas da sua Semana:
+        </h3>
+        <div class="config-days-list" id="lista-dias-config">
+          <!-- Inserido dinamicamente -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------
+    // HORÁRIOS DAS AULAS (GERENCIADO VIA LOCALSTORAGE E CONFIGURAÇÃO)
+    // -------------------------------------------------------------
+    const CHAVE_HORARIO = "licier_horario_aulas_salvo";
+
+    // Grade inicial padrão
+    const gradePadrao = [
+      {
+        diaSemana: 1,
+        nomeDia: "Segunda-feira",
+        temAula: false,
+        horarioTexto: "Sem aula",
+        horaInicio: "",
+        horaFim: "",
+        materia: "Não Tem",
+        icone: "☕"
+      },
+      {
+        diaSemana: 2,
+        nomeDia: "Terça-feira",
+        temAula: true,
+        horarioTexto: "19:00 - 22:30",
+        horaInicio: "19:00",
+        horaFim: "22:30",
+        materia: "Programação Web II",
+        icone: "💻"
+      },
+      {
+        diaSemana: 3,
+        nomeDia: "Quarta-feira",
+        temAula: false,
+        horarioTexto: "Sem aula",
+        horaInicio: "",
+        horaFim: "",
+        materia: "Não Tem",
+        icone: "🏖️"
+      },
+      {
+        diaSemana: 4,
+        nomeDia: "Quinta-feira",
+        temAula: false,
+        horarioTexto: "Sem aula",
+        horaInicio: "",
+        horaFim: "",
+        materia: "Não Tem",
+        icone: "📖"
+      },
+      {
+        diaSemana: 5,
+        nomeDia: "Sexta-feira",
+        temAula: true,
+        horarioTexto: "19:00 - 22:30",
+        horaInicio: "19:00",
+        horaFim: "22:30",
+        materia: "TCC II",
+        icone: "🎓"
+      },
+      {
+        diaSemana: 6,
+        nomeDia: "Sábado",
+        temAula: false,
+        horarioTexto: "Sem aula",
+        horaInicio: "",
+        horaFim: "",
+        materia: "Não Tem",
+        icone: "🎉"
+      },
+      {
+        diaSemana: 0,
+        nomeDia: "Domingo",
+        temAula: false,
+        horarioTexto: "Sem aula",
+        horaInicio: "",
+        horaFim: "",
+        materia: "Não Tem",
+        icone: "🌴"
+      }
+    ];
+
+    function carregarHorarios() {
+      try {
+        const dados = localStorage.getItem(CHAVE_HORARIO);
+        if (dados) {
+          const parsed = JSON.parse(dados);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar horário salvo", e);
+      }
+      return gradePadrao;
+    }
+
+    let horarioSemanal = carregarHorarios();
+
+    function salvarHorariosNoStorage() {
+      try {
+        localStorage.setItem(CHAVE_HORARIO, JSON.stringify(horarioSemanal));
+      } catch (e) {
+        console.error("Erro ao salvar horários", e);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // CONTROLE DE MODO CLARO / ESCURO
+    // -------------------------------------------------------------
+    const CHAVE_TEMA = "licier_tema_preferido";
+    const btnTema = document.getElementById("btn-tema");
+    const themeIcon = document.getElementById("theme-icon");
+    const themeText = document.getElementById("theme-text");
+
+    function aplicarTema(tema) {
+      if (tema === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        themeIcon.textContent = "☀️";
+        themeText.textContent = "Modo Claro";
+        localStorage.setItem(CHAVE_TEMA, "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        themeIcon.textContent = "🌙";
+        themeText.textContent = "Modo Escuro";
+        localStorage.setItem(CHAVE_TEMA, "light");
+      }
+    }
+
+    function alternarTema() {
+      const temaAtual = document.documentElement.getAttribute("data-theme");
+      if (temaAtual === "dark") {
+        aplicarTema("light");
+      } else {
+        aplicarTema("dark");
+      }
+    }
+
+    function carregarTemaSalvo() {
+      const salvo = localStorage.getItem(CHAVE_TEMA);
+      if (salvo === "dark") {
+        aplicarTema("dark");
+      } else if (salvo === "light") {
+        aplicarTema("light");
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          aplicarTema("dark");
+        } else {
+          aplicarTema("light");
+        }
+      }
+    }
+
+    btnTema.addEventListener("click", alternarTema);
+
+    // -------------------------------------------------------------
+    // CONVERSORES DE HORA
+    // -------------------------------------------------------------
+    function converterParaMinutos(horaString) {
+      if (!horaString) return null;
+      const partes = horaString.split(":");
+      return parseInt(partes[0], 10) * 60 + parseInt(partes[1], 10);
+    }
+
+    function formatarMinutos(minutosRestantes) {
+      const horas = Math.floor(minutosRestantes / 60);
+      const minutos = minutosRestantes % 60;
+      if (horas > 0) {
+        return `${horas}h ${minutos > 0 ? minutos + 'min' : ''}`.trim();
+      }
+      return `${minutos}min`;
+    }
+
+    function formatarMinutosPorExtenso(minutosRestantes) {
+      const horas = Math.floor(minutosRestantes / 60);
+      const minutos = minutosRestantes % 60;
+      let resultado = "";
+      if (horas > 0) {
+        resultado += `${horas} hora${horas > 1 ? 's' : ''}`;
+      }
+      if (minutos > 0) {
+        if (horas > 0) resultado += " e ";
+        resultado += `${minutos} minuto${minutos > 1 ? 's' : ''}`;
+      }
+      return resultado || "menos de 1 minuto";
+    }
+
+    function obterSaudacao(hora) {
+      if (hora >= 5 && hora < 12) return "Bom dia";
+      if (hora >= 12 && hora < 18) return "Boa tarde";
+      return "Boa noite";
+    }
+
+    // -------------------------------------------------------------
+    // SOM DE NOTIFICAÇÃO
+    // -------------------------------------------------------------
+    function tocarSomNotificacao() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+
+        const notas = [523.25, 659.25, 783.99, 1046.50];
+        
+        notas.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
+
+          gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.12);
+          gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + idx * 0.12 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.65);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(ctx.currentTime + idx * 0.12);
+          osc.stop(ctx.currentTime + idx * 0.12 + 0.7);
+        });
+      } catch (e) {
+        console.error("Não foi possível tocar o som:", e);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NOTIFICAÇÕES DO NAVEGADOR
+    // -------------------------------------------------------------
+    const btnNotificacao = document.getElementById("btn-notificacao");
+    const notifIcon = document.getElementById("notif-icon");
+    const notifText = document.getElementById("notif-text");
+
+    function atualizarBotaoNotificacao() {
+      if (!('Notification' in window)) {
+        btnNotificacao.style.display = "none";
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        btnNotificacao.classList.add("active");
+        notifIcon.textContent = "🔔";
+        notifText.textContent = "Avisos Ativos";
+      } else if (Notification.permission === "denied") {
+        btnNotificacao.classList.remove("active");
+        notifIcon.textContent = "🔕";
+        notifText.textContent = "Avisos Bloqueados";
+      } else {
+        btnNotificacao.classList.remove("active");
+        notifIcon.textContent = "🔔";
+        notifText.textContent = "Avisos (5 min)";
+      }
+    }
+
+    async function gerenciarPermissaoNotificacao() {
+      if (!('Notification' in window)) {
+        alert("Seu navegador não tem suporte a notificações.");
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        tocarSomNotificacao();
+        new Notification("🔔 Teste de Aviso do Licier!", {
+          body: "Os avisos estão funcionando perfeitamente! Você será avisado 5 minutos antes de cada aula começar.",
+          icon: ""
+        });
+      } else if (Notification.permission !== "denied") {
+        const resultado = await Notification.requestPermission();
+        if (resultado === "granted") {
+          tocarSomNotificacao();
+          new Notification("🔔 Avisos ativados com sucesso!", {
+            body: "A partir de agora, a página vai te avisar com som 5 minutos antes das suas aulas começarem.",
+            icon: ""
+          });
+        }
+      } else {
+        alert("As notificações estão bloqueadas no navegador. Clique no cadeado na barra de endereços para permitir notificações!");
+      }
+
+      atualizarBotaoNotificacao();
+    }
+
+    btnNotificacao.addEventListener("click", gerenciarPermissaoNotificacao);
+
+    function dispararAvisoCincoMinutos(materia, horario) {
+      tocarSomNotificacao();
+
+      if ('Notification' in window && Notification.permission === "granted") {
+        new Notification(`🔔 Aula em 5 minutos: ${materia}!`, {
+          body: `Sua aula de ${materia} começa às ${horario}. Prepare seus cadernos e materiais! 🎒`,
+          icon: ""
+        });
+      }
+    }
+
+    function checarAvisosDeAula(infoHoje, minutosAtuais) {
+      if (!infoHoje || !infoHoje.temAula || !infoHoje.horaInicio) return;
+
+      const inicio = converterParaMinutos(infoHoje.horaInicio);
+      const minutosFaltando = inicio - minutosAtuais;
+
+      if (minutosFaltando > 0 && minutosFaltando <= 5) {
+        const hojeChave = new Date().toDateString();
+        const registroAviso = localStorage.getItem("licier_aviso_enviado_" + hojeChave);
+
+        if (!registroAviso) {
+          dispararAvisoCincoMinutos(infoHoje.materia, infoHoje.horaInicio);
+          localStorage.setItem("licier_aviso_enviado_" + hojeChave, "sim");
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // CONTROLE DE TAMANHO DE FONTE (A+ e A-)
+    // -------------------------------------------------------------
+    const CHAVE_FONTE = "licier_tamanho_fonte";
+    const tamanhosPossiveis = [14, 16, 18, 20, 22, 24];
+    let indiceTamanhoAtual = 1;
+
+    function aplicarTamanhoFonte(novoIndice) {
+      if (novoIndice < 0) novoIndice = 0;
+      if (novoIndice >= tamanhosPossiveis.length) novoIndice = tamanhosPossiveis.length - 1;
+
+      indiceTamanhoAtual = novoIndice;
+      const px = tamanhosPossiveis[indiceTamanhoAtual];
+      document.documentElement.style.setProperty('--tamanho-base', `${px}px`);
+      localStorage.setItem(CHAVE_FONTE, indiceTamanhoAtual);
+    }
+
+    function carregarTamanhoFonte() {
+      const salvo = localStorage.getItem(CHAVE_FONTE);
+      if (salvo !== null) {
+        const parsed = parseInt(salvo, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < tamanhosPossiveis.length) {
+          aplicarTamanhoFonte(parsed);
+          return;
+        }
+      }
+      aplicarTamanhoFonte(1);
+    }
+
+    document.getElementById("btn-font-minus").addEventListener("click", () => {
+      aplicarTamanhoFonte(indiceTamanhoAtual - 1);
+    });
+
+    document.getElementById("btn-font-plus").addEventListener("click", () => {
+      aplicarTamanhoFonte(indiceTamanhoAtual + 1);
+    });
+
+    // -------------------------------------------------------------
+    // LEITURA EM VOZ ALTA (TEXT-TO-SPEECH)
+    // -------------------------------------------------------------
+    const btnOuvir = document.getElementById("btn-ouvir");
+    const speechIcon = document.getElementById("speech-icon");
+    const speechText = document.getElementById("speech-text");
+
+    function atualizarEstadoBotaoFala(falando) {
+      if (falando) {
+        btnOuvir.classList.add("is-speaking");
+        speechIcon.textContent = "⏹️";
+        speechText.textContent = "Parar";
+      } else {
+        btnOuvir.classList.remove("is-speaking");
+        speechIcon.textContent = "🔊";
+        speechText.textContent = "Ouvir Aulas";
+      }
+    }
+
+    function lerAulasEmVozAlta() {
+      if (!('speechSynthesis' in window)) {
+        alert("Desculpe, seu navegador não suporta leitura em voz alta.");
+        return;
+      }
+
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        atualizarEstadoBotaoFala(false);
+        return;
+      }
+
+      const agora = new Date();
+      const horaAtual = agora.getHours();
+      const minutoAtual = agora.getMinutes();
+      const minutosAtuais = horaAtual * 60 + minutoAtual;
+      const diaDaSemana = agora.getDay();
+
+      const saudacao = obterSaudacao(horaAtual);
+      const opcoesData = { weekday: 'long', day: 'numeric', month: 'long' };
+      const dataTexto = agora.toLocaleDateString('pt-BR', opcoesData);
+
+      const infoHoje = horarioSemanal.find(item => item.diaSemana === diaDaSemana);
+
+      let textoParaFalar = `${saudacao}, Licier! Hoje é ${dataTexto}. `;
+
+      if (infoHoje && infoHoje.temAula) {
+        const horaInicioFalada = infoHoje.horaInicio ? infoHoje.horaInicio.replace(':', ' horas e ') : '';
+        const horaFimFalada = infoHoje.horaFim ? infoHoje.horaFim.replace(':', ' horas e ') : '';
+
+        textoParaFalar += `A sua aula de hoje é ${infoHoje.materia}`;
+        if (horaInicioFalada && horaFimFalada) {
+          textoParaFalar += `, das ${horaInicioFalada} às ${horaFimFalada}. `;
+        } else {
+          textoParaFalar += `. `;
+        }
+
+        const inicio = converterParaMinutos(infoHoje.horaInicio);
+        const fim = converterParaMinutos(infoHoje.horaFim);
+
+        if (inicio && fim) {
+          if (minutosAtuais >= inicio && minutosAtuais < fim) {
+            const restantes = fim - minutosAtuais;
+            textoParaFalar += `Essa aula está acontecendo agora! Falta ${formatarMinutosPorExtenso(restantes)} para terminar. `;
+          } else if (minutosAtuais < inicio) {
+            const ateInicio = inicio - minutosAtuais;
+            textoParaFalar += `A aula começa em ${formatarMinutosPorExtenso(ateInicio)}. Lembre-se de organizar seu material. `;
+          } else {
+            textoParaFalar += `A sua aula de hoje já terminou. Bom descanso! `;
+          }
+        }
+      } else {
+        textoParaFalar += `Hoje você não tem nenhuma aula programada. É um dia livre para descansar ou adiantar suas atividades com calma. `;
+      }
+
+      const pendentes = tarefas.filter(t => !t.feita).length;
+      if (pendentes > 0) {
+        textoParaFalar += `Você tem ${pendentes} tarefa${pendentes > 1 ? 's pendentes' : ' pendente'} na sua lista.`;
+      } else {
+        textoParaFalar += `Parabéns, todas as suas tarefas estão em dia!`;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(textoParaFalar);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => atualizarEstadoBotaoFala(true);
+      utterance.onend = () => atualizarEstadoBotaoFala(false);
+      utterance.onerror = () => atualizarEstadoBotaoFala(false);
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    btnOuvir.addEventListener("click", lerAulasEmVozAlta);
+
+    // -------------------------------------------------------------
+    // SISTEMA DE TAREFAS
+    // -------------------------------------------------------------
+    const CHAVE_STORAGE = "licier_organizador_tarefas";
+
+    function carregarTarefasSalvas() {
+      try {
+        const dados = localStorage.getItem(CHAVE_STORAGE);
+        return dados ? JSON.parse(dados) : [
+          { id: 1, texto: "Revisar anotações de Programação Web II", feita: false },
+          { id: 2, texto: "Separar material do TCC II", feita: false }
+        ];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    let tarefas = carregarTarefasSalvas();
+
+    function salvarTarefas() {
+      try {
+        localStorage.setItem(CHAVE_STORAGE, JSON.stringify(tarefas));
+      } catch (e) {
+        console.error("Erro no localStorage", e);
+      }
+      atualizarContador();
+    }
+
+    function atualizarContador() {
+      const contadorEl = document.getElementById("contador-tarefas");
+      const total = tarefas.length;
+      const concluidas = tarefas.filter(t => t.feita).length;
+      
+      if (total === 0) {
+        contadorEl.textContent = "Nenhuma tarefa";
+      } else {
+        contadorEl.textContent = `${concluidas} de ${total} feita${total > 1 ? 's' : ''}`;
+      }
+    }
+
+    function renderizarTarefas() {
+      const listaEl = document.getElementById("lista-tarefas");
+      listaEl.innerHTML = "";
+
+      if (tarefas.length === 0) {
+        listaEl.innerHTML = `
+          <div class="empty-tasks">
+            <span style="font-size: 2.2rem;">🎉</span>
+            <span>Tudo limpo! Nenhuma tarefa pendente.</span>
+          </div>
+        `;
+        atualizarContador();
+        return;
+      }
+
+      tarefas.forEach(tarefa => {
+        const item = document.createElement("li");
+        item.className = `task-item ${tarefa.feita ? 'is-done' : ''}`;
+        item.id = `tarefa-${tarefa.id}`;
+
+        item.innerHTML = `
+          <div class="task-left" onclick="alternarStatusTarefa(${tarefa.id})" title="Clique para marcar como feita">
+            <div class="custom-check">✓</div>
+            <span class="task-text">${escapeHTML(tarefa.texto)}</span>
+          </div>
+          <button class="btn-delete" onclick="apagarTarefa(${tarefa.id})" title="Apagar tarefa">
+            🗑️
+          </button>
+        `;
+
+        listaEl.appendChild(item);
+      });
+
+      atualizarContador();
+    }
+
+    function alternarStatusTarefa(id) {
+      const tarefa = tarefas.find(t => t.id === id);
+      if (!tarefa) return;
+
+      tarefa.feita = !tarefa.feita;
+      salvarTarefas();
+
+      const itemEl = document.getElementById(`tarefa-${id}`);
+      if (itemEl) {
+        if (tarefa.feita) {
+          itemEl.classList.add("is-done");
+        } else {
+          itemEl.classList.remove("is-done");
+        }
+      }
+    }
+
+    function apagarTarefa(id) {
+      const itemEl = document.getElementById(`tarefa-${id}`);
+      if (itemEl) {
+        itemEl.style.transform = "translateX(20px)";
+        itemEl.style.opacity = "0";
+        setTimeout(() => {
+          tarefas = tarefas.filter(t => t.id !== id);
+          salvarTarefas();
+          renderizarTarefas();
+        }, 220);
+      } else {
+        tarefas = tarefas.filter(t => t.id !== id);
+        salvarTarefas();
+        renderizarTarefas();
+      }
+    }
+
+    function adicionarNovaTarefa(texto) {
+      const textoLimpo = texto.trim();
+      if (!textoLimpo) return;
+
+      const nova = {
+        id: Date.now(),
+        texto: textoLimpo,
+        feita: false
+      };
+
+      tarefas.unshift(nova);
+      salvarTarefas();
+      renderizarTarefas();
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.innerText = str;
+      return div.innerHTML;
+    }
+
+    const formTarefas = document.getElementById("form-tarefas");
+    const inputTarefa = document.getElementById("input-tarefa");
+
+    formTarefas.addEventListener("submit", (e) => {
+      e.preventDefault();
+      adicionarNovaTarefa(inputTarefa.value);
+      inputTarefa.value = "";
+      inputTarefa.focus();
+    });
+
+    // -------------------------------------------------------------
+    // ATUALIZAÇÃO DA PÁGINA (DASHBOARD PRINCIPAL)
+    // -------------------------------------------------------------
+    function atualizarPagina() {
+      const agora = new Date();
+      const horaAtual = agora.getHours();
+      const minutoAtual = agora.getMinutes();
+      const minutosAtuais = horaAtual * 60 + minutoAtual;
+      const diaDaSemana = agora.getDay();
+
+      // 1. Saudação do Topo
+      const saudacao = obterSaudacao(horaAtual);
+      document.getElementById("saudacao-topo").innerHTML = `${saudacao}, <span class="greeting-name">Licier</span>! 👋`;
+
+      // 2. Data de hoje
+      const opcoesData = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+      let dataFormatada = agora.toLocaleDateString('pt-BR', opcoesData);
+      dataFormatada = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
+      document.getElementById("data-atual").textContent = dataFormatada;
+
+      // 3. Verificar estado da aula de hoje
+      const containerHoje = document.getElementById("container-hoje");
+      const badgeDiaHoje = document.getElementById("badge-dia-hoje");
+      const infoHoje = horarioSemanal.find(item => item.diaSemana === diaDaSemana);
+
+      let aulaAcontecendoAgora = false;
+
+      if (infoHoje) {
+        badgeDiaHoje.textContent = infoHoje.nomeDia;
+
+        // Checar aviso sonoro de 5 minutos antes
+        checarAvisosDeAula(infoHoje, minutosAtuais);
+
+        if (infoHoje.temAula) {
+          const inicio = converterParaMinutos(infoHoje.horaInicio);
+          const fim = converterParaMinutos(infoHoje.horaFim);
+
+          if (inicio && fim && minutosAtuais >= inicio && minutosAtuais < fim) {
+            // EM ANDAMENTO AGORA
+            aulaAcontecendoAgora = true;
+
+            const duracaoTotal = fim - inicio;
+            const tempoDecorrido = minutosAtuais - inicio;
+            const minutosRestantes = fim - minutosAtuais;
+            const percentual = Math.min(100, Math.max(0, Math.round((tempoDecorrido / duracaoTotal) * 100)));
+
+            containerHoje.innerHTML = `
+              <div class="today-card-active happening-now">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                  <div class="time-badge">⏰ ${infoHoje.horarioTexto}</div>
+                  <div class="live-badge">
+                    <span class="pulsing-dot"></span>
+                    <span>Acontecendo Agora</span>
+                  </div>
+                </div>
+
+                <div class="subject-title">${infoHoje.icone || '💻'} ${escapeHTML(infoHoje.materia)}</div>
+
+                <!-- Barra de Progresso -->
+                <div class="progress-wrapper">
+                  <div class="progress-labels">
+                    <span>⏳ Falta: ${formatarMinutos(minutosRestantes)}</span>
+                    <span>${percentual}%</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${percentual}%"></div>
+                  </div>
+                  <div class="progress-subtext">Término previsto às ${infoHoje.horaFim}</div>
+                </div>
+              </div>
+            `;
+          } else if (inicio && minutosAtuais < inicio) {
+            // AINDA NÃO COMEÇOU
+            const minutosAteInicio = inicio - minutosAtuais;
+            const quaseComecando = minutosAteInicio <= 5;
+
+            containerHoje.innerHTML = `
+              <div class="today-card-active ${quaseComecando ? 'almost-starting' : ''}">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                  <div class="time-badge">⏰ ${infoHoje.horarioTexto}</div>
+                  ${quaseComecando ? `
+                    <div class="live-badge warning">
+                      <span class="pulsing-dot warning"></span>
+                      <span>Começa em 5 min!</span>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="subject-title">${infoHoje.icone || '💻'} ${escapeHTML(infoHoje.materia)}</div>
+                <div class="subject-subtitle">
+                  ${quaseComecando 
+                    ? `⚠️ <strong>Atenção:</strong> Começa em <strong>${formatarMinutos(minutosAteInicio)}</strong>! Vá para a sala.` 
+                    : `Começa em <strong>${formatarMinutos(minutosAteInicio)}</strong> (às ${infoHoje.horaInicio}). Separe o material! 🎒`
+                  }
+                </div>
+              </div>
+            `;
+          } else if (fim && minutosAtuais >= fim) {
+            // JÁ TERMINOU
+            containerHoje.innerHTML = `
+              <div class="today-card-empty">
+                <div class="empty-icon">✅</div>
+                <div class="empty-title">Aula de hoje concluída!</div>
+                <div class="empty-desc">Parabéns pelo dia de estudos. Descanse e revise suas tarefas.</div>
+              </div>
+            `;
+          } else {
+            // Caso tenha aula mas sem horário específico definido
+            containerHoje.innerHTML = `
+              <div class="today-card-active">
+                <div class="time-badge">⏰ ${infoHoje.horarioTexto || 'Horário flexível'}</div>
+                <div class="subject-title">${infoHoje.icone || '📚'} ${escapeHTML(infoHoje.materia)}</div>
+                <div class="subject-subtitle">Você tem esta aula programada para hoje!</div>
+              </div>
+            `;
+          }
+        } else {
+          // NÃO TEM AULA
+          containerHoje.innerHTML = `
+            <div class="today-card-empty">
+              <div class="empty-icon">${infoHoje.icone || '☕'}</div>
+              <div class="empty-title">Hoje você não tem aula!</div>
+              <div class="empty-desc">Aproveite o tempo livre para descansar ou organizar suas tarefas com calma.</div>
+            </div>
+          `;
+        }
+      } else {
+        badgeDiaHoje.textContent = diaDaSemana === 0 ? "Domingo" : "Sábado";
+        containerHoje.innerHTML = `
+          <div class="today-card-empty">
+            <div class="empty-icon">🎉</div>
+            <div class="empty-title">Fim de Semana!</div>
+            <div class="empty-desc">Sem aulas programadas. Aproveite para descansar!</div>
+          </div>
+        `;
+      }
+
+      // 4. Montar a grade semanal
+      const gridSemana = document.getElementById("grid-semana");
+      gridSemana.innerHTML = "";
+
+      // Mostra Segunda a Sexta, mais Sábado e Domingo caso tenham aula configurada
+      const diasParaExibir = horarioSemanal.filter(item => {
+        if (item.diaSemana >= 1 && item.diaSemana <= 5) return true;
+        return item.temAula; // exibe fds se tiver aula cadastrada
+      });
+
+      diasParaExibir.forEach(item => {
+        const ehHoje = item.diaSemana === diaDaSemana;
+        const ehAgora = ehHoje && aulaAcontecendoAgora;
+
+        const card = document.createElement("div");
+        card.className = `week-card ${ehHoje ? 'is-today' : ''} ${ehAgora ? 'happening-now' : ''} ${!item.temAula ? 'no-class' : ''}`;
+
+        let tagStatus = '';
+        if (ehAgora) {
+          tagStatus = '<span class="pill-now-green">⚡ Agora</span>';
+        } else if (ehHoje) {
+          tagStatus = '<span class="pill-is-today">Hoje</span>';
+        }
+
+        card.innerHTML = `
+          <div class="week-card-top">
+            <span class="week-card-day">${item.nomeDia}</span>
+            ${tagStatus}
+          </div>
+          <div class="week-card-time">${item.temAula ? '⏰ ' + item.horarioTexto : 'Dia Livre'}</div>
+          <div class="week-card-subject">${item.icone || '📚'} ${escapeHTML(item.materia)}</div>
+        `;
+
+        gridSemana.appendChild(card);
+      });
+    }
+
+    // =============================================================
+    // TELA DE CONFIGURAÇÃO DE AULAS (MODAL)
+    // =============================================================
+    const modalConfig = document.getElementById("modal-config");
+    const btnAbrirConfig = document.getElementById("btn-abrir-config");
+    const btnFecharConfig = document.getElementById("btn-fechar-config");
+    const listaDiasConfig = document.getElementById("lista-dias-config");
+
+    // Campos do formulário
+    const formConfig = document.getElementById("form-config-aula");
+    const campoDia = document.getElementById("campo-dia");
+    const campoIcone = document.getElementById("campo-icone");
+    const campoTemAula = document.getElementById("campo-tem-aula");
+    const campoMateria = document.getElementById("campo-materia");
+    const campoHoraInicio = document.getElementById("campo-hora-inicio");
+    const campoHoraFim = document.getElementById("campo-hora-fim");
+    const camposDetalhes = document.getElementById("campos-detalhes-aula");
+    const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
+    const formTitulo = document.getElementById("form-titulo");
+
+    // Alternar visibilidade dos campos de horário e matéria conforme checkbox
+    campoTemAula.addEventListener("change", () => {
+      camposDetalhes.style.display = campoTemAula.checked ? "flex" : "none";
+    });
+
+    function abrirModalConfig() {
+      modalConfig.classList.add("active");
+      renderizarListaConfig();
+    }
+
+    function fecharModalConfig() {
+      modalConfig.classList.remove("active");
+      limparFormularioConfig();
+    }
+
+    btnAbrirConfig.addEventListener("click", abrirModalConfig);
+    btnFecharConfig.addEventListener("click", fecharModalConfig);
+
+    // Fecha ao clicar fora da caixa branca
+    modalConfig.addEventListener("click", (e) => {
+      if (e.target === modalConfig) fecharModalConfig();
+    });
+
+    function renderizarListaConfig() {
+      listaDiasConfig.innerHTML = "";
+
+      // Ordenar Segunda a Domingo
+      const diasOrdenados = [1, 2, 3, 4, 5, 6, 0];
+
+      diasOrdenados.forEach(diaNum => {
+        const item = horarioSemanal.find(h => h.diaSemana === diaNum);
+        if (!item) return;
+
+        const row = document.createElement("div");
+        row.className = "config-day-item";
+
+        row.innerHTML = `
+          <div class="config-day-info">
+            <span class="config-day-name">${item.icone || '📅'} ${item.nomeDia}</span>
+            <span class="config-day-details">
+              ${item.temAula ? `<strong>${escapeHTML(item.materia)}</strong> (${item.horarioTexto})` : '💤 Sem aula (Dia Livre)'}
+            </span>
+          </div>
+          <div class="config-day-actions">
+            <button class="btn-action-small" onclick="editarDiaConfig(${item.diaSemana})">
+              <span>✏️</span>
+              <span>Editar</span>
+            </button>
+            ${item.temAula ? `
+              <button class="btn-action-small danger" onclick="limparAulaConfig(${item.diaSemana})">
+                <span>🗑️</span>
+                <span>Limpar</span>
+              </button>
+            ` : ''}
+          </div>
+        `;
+
+        listaDiasConfig.appendChild(row);
+      });
+    }
+
+    window.editarDiaConfig = function(diaNum) {
+      const item = horarioSemanal.find(h => h.diaSemana === diaNum);
+      if (!item) return;
+
+      campoDia.value = String(item.diaSemana);
+      campoIcone.value = item.icone || "📚";
+      campoTemAula.checked = item.temAula;
+      camposDetalhes.style.display = item.temAula ? "flex" : "none";
+      campoMateria.value = item.temAula ? item.materia : "";
+      campoHoraInicio.value = item.horaInicio || "19:00";
+      campoHoraFim.value = item.horaFim || "22:30";
+
+      formTitulo.textContent = `✏️ Editando: ${item.nomeDia}`;
+      btnCancelarEdicao.style.display = "inline-flex";
+
+      // Rola até o formulário
+      formConfig.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    window.limparAulaConfig = function(diaNum) {
+      const item = horarioSemanal.find(h => h.diaSemana === diaNum);
+      if (!item) return;
+
+      if (confirm(`Deseja definir a ${item.nomeDia} como dia livre (sem aula)?`)) {
+        item.temAula = false;
+        item.materia = "Não Tem";
+        item.horarioTexto = "Sem aula";
+        item.horaInicio = "";
+        item.horaFim = "";
+        item.icone = diaNum === 0 || diaNum === 6 ? "🎉" : "☕";
+
+        salvarHorariosNoStorage();
+        atualizarPagina();
+        renderizarListaConfig();
+      }
+    };
+
+    function limparFormularioConfig() {
+      formTitulo.textContent = "✏️ Cadastrar ou Mudar Aula";
+      btnCancelarEdicao.style.display = "none";
+      campoMateria.value = "";
+      campoTemAula.checked = true;
+      camposDetalhes.style.display = "flex";
+      campoIcone.value = "💻";
+      campoHoraInicio.value = "19:00";
+      campoHoraFim.value = "22:30";
+    }
+
+    btnCancelarEdicao.addEventListener("click", limparFormularioConfig);
+
+    formConfig.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const diaEscolhido = parseInt(campoDia.value, 10);
+      const temAula = campoTemAula.checked;
+      const icone = campoIcone.value.trim() || (temAula ? "📚" : "☕");
+      const materia = campoMateria.value.trim() || "Não Tem";
+      const inicio = campoHoraInicio.value;
+      const fim = campoHoraFim.value;
+
+      let horarioTexto = "Sem aula";
+      if (temAula) {
+        if (inicio && fim) {
+          horarioTexto = `${inicio} - ${fim}`;
+        } else if (inicio) {
+          horarioTexto = `Início: ${inicio}`;
+        } else {
+          horarioTexto = "Horário flexível";
+        }
+      }
+
+      const item = horarioSemanal.find(h => h.diaSemana === diaEscolhido);
+      if (item) {
+        item.temAula = temAula;
+        item.icone = icone;
+        item.materia = temAula ? materia : "Não Tem";
+        item.horaInicio = temAula ? inicio : "";
+        item.horaFim = temAula ? fim : "";
+        item.horarioTexto = horarioTexto;
+      }
+
+      salvarHorariosNoStorage();
+      atualizarPagina();
+      renderizarListaConfig();
+      limparFormularioConfig();
+
+      alert("Aula salva com sucesso!");
+    });
+
+    // -------------------------------------------------------------
+    // EXPORTAR E IMPORTAR HORÁRIOS EM FORMATO JSON
+    // -------------------------------------------------------------
+    const btnExportarJson = document.getElementById("btn-exportar-json");
+    const inputImportarJson = document.getElementById("input-importar-json");
+
+    btnExportarJson.addEventListener("click", () => {
+      const conteudoJson = JSON.stringify(horarioSemanal, null, 2);
+      const blob = new Blob([conteudoJson], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "meu_horario_escolar_licier.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+
+    inputImportarJson.addEventListener("change", (evento) => {
+      const arquivo = evento.target.files[0];
+      if (!arquivo) return;
+
+      const leitor = new FileReader();
+      leitor.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          if (Array.isArray(dados) && dados.length > 0) {
+            horarioSemanal = dados;
+            salvarHorariosNoStorage();
+            atualizarPagina();
+            renderizarListaConfig();
+            alert("✅ Horário escolar carregado com sucesso do arquivo JSON!");
+          } else {
+            alert("❌ O arquivo selecionado não contém um horário válido.");
+          }
+        } catch (erro) {
+          alert("❌ Ocorreu um erro ao ler o arquivo JSON. Certifique-se de que é um arquivo válido.");
+        }
+      };
+
+      leitor.readAsText(arquivo);
+      evento.target.value = ""; // permite escolher o mesmo arquivo de novo se quiser
+    });
+
+    // -------------------------------------------------------------
+    // INICIALIZAÇÃO GERAL
+    // -------------------------------------------------------------
+    function inicializar() {
+      carregarTemaSalvo();
+      carregarTamanhoFonte();
+      atualizarBotaoNotificacao();
+      atualizarPagina();
+      renderizarTarefas();
+
+      // Atualiza a cada 1 minuto
+      setInterval(atualizarPagina, 60000);
+      window.addEventListener("focus", atualizarPagina);
+    }
+
+    inicializar();
+  </script>
+</body>
+</html>
